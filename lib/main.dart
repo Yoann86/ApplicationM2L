@@ -1,11 +1,13 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
-
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'connexion.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async{
+    await dotenv.load(fileName: ".env");
+    runApp(MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
     const MyApp({super.key});
@@ -25,7 +27,7 @@ class MyPage extends StatelessWidget {
     Widget build(BuildContext context) {
         return Scaffold(
             appBar: AppBar(
-                title: Text('Page avec bouton'),
+                title: Text('M2L Managing Tool'),
             ),
             body: Center(
                 child: ElevatedButton(
@@ -35,7 +37,7 @@ class MyPage extends StatelessWidget {
                         MaterialPageRoute(builder: (context) => Formulaire()),
                         );
                     } , // Appel de la fonction lorsque le bouton est pressé
-                    child: Text('Appeler la fonction'),
+                    child: Text('Se connecter'),
                 ),
             ),
         );
