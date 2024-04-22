@@ -1,9 +1,10 @@
 // ignore_for_file: no_leading_underscores_for_local_identifiers, use_build_context_synchronously, prefer_const_constructors, avoid_print
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import './produit.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 
 class ModificationPage extends StatelessWidget {
     final String uuid;
@@ -73,7 +74,20 @@ class ModificationForm extends StatefulWidget {
 
 class _ModificationFormState extends State<ModificationForm> {
     final _formKey = GlobalKey<FormState>();
+    Uint8List? _imageBytes;
     final String apiUrl = dotenv.env['API_URL'].toString();
+
+    Future<void> _getImage() async {
+        final picker = ImagePicker();
+        final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+        if (pickedFile != null) {
+            final imageBytes = await pickedFile.readAsBytes();
+            setState(() {
+                _imageBytes = imageBytes;
+            });
+        }
+    }
 
     Future<void> _updateData() async {
         final nom = widget.nomController.text;
@@ -81,19 +95,26 @@ class _ModificationFormState extends State<ModificationForm> {
         final prix = widget.prixController.text;
         final quantite = widget.quantiteController.text;
 
-        final response = await http.put(
+        var request = http.MultipartRequest(
+            'PUT',
             Uri.parse('$apiUrl/dashboard/modifierproduit/${widget.uuid}'),
-            headers: {
-                'Content-Type': 'application/json; charset=UTF-8',
-                'Authorization': 'Bearer ${widget.token}',
-            },
-            body: jsonEncode({
-                'nom': nom,
-                'description': description,
-                'prix': prix,
-                'quantite': quantite,
-            }),
         );
+        request.headers['Content-Type'] = 'application/json; charset=UTF-8';
+        request.headers['Authorization'] = 'Bearer ${widget.token}';
+
+        if (_imageBytes != null) {
+            request.files.add(http.MultipartFile.fromBytes(
+                'image',
+                _imageBytes!,
+                filename: 'image_$nom$prix$quantite.jpg',
+            ));
+        }
+        request.fields['nom'] = nom;
+        request.fields['description'] = description;
+        request.fields['prix'] = prix;
+        request.fields['quantite'] = quantite;
+
+        var response = await request.send();
 
         if (response.statusCode == 200) {
             Navigator.pushReplacement(
@@ -101,7 +122,7 @@ class _ModificationFormState extends State<ModificationForm> {
                 MaterialPageRoute(builder: (context) => Produit(token: widget.token)),
             );
         } else {
-            print("erreur modif");
+            print("erreur modif : ${response.statusCode}");
         }
     }
 
@@ -155,6 +176,23 @@ class _ModificationFormState extends State<ModificationForm> {
                             return null;
                         },
                     ),
+                    Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                            if (_imageBytes != null)
+                                Image.memory(
+                                    _imageBytes!,
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                ),
+                            SizedBox(height: 20),
+                            ElevatedButton(
+                                onPressed: _getImage,
+                                child: Text('Sélectionner une image'),
+                            ),
+                    ],
+                ),
                     const SizedBox(height: 16.0),
                     ElevatedButton(
                         onPressed: () async {
