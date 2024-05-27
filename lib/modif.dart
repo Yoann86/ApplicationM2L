@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import './produit.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'global.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 
@@ -75,7 +75,6 @@ class ModificationForm extends StatefulWidget {
 class _ModificationFormState extends State<ModificationForm> {
     final _formKey = GlobalKey<FormState>();
     Uint8List? _imageBytes;
-    final String apiUrl = dotenv.env['API_URL'].toString();
 
     Future<void> _getImage() async {
         final picker = ImagePicker();

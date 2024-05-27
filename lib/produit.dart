@@ -6,7 +6,7 @@ import './ajout.dart';
 import './modif.dart';
 import './bottombar.dart';
 import './settings.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'global.dart';
 
 class Produit extends StatefulWidget {
     final String token;
@@ -22,7 +22,6 @@ class _ProduitState extends State<Produit> with TickerProviderStateMixin {
     List<dynamic> productList = []; 
     List<dynamic> userList = []; 
     late TabController _tabController;
-    final String apiUrl = dotenv.env['API_URL'].toString();
 
     @override
     void initState() {

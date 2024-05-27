@@ -3,15 +3,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import './produit.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'global.dart';
 
 void main() async{
-    await dotenv.load(fileName: "../assets/.env");
     runApp(Formulaire());
 }
 
 String cleanToken(String token) {
-    return token.replaceAll("[\\n\\r\\s\"']+", '');
+    token = token.replaceAll(RegExp(r'[\"\n\r\s]+'), '');
+    return token;
 }
 
 class Formulaire extends StatelessWidget {
@@ -45,7 +45,6 @@ void redirectToProduit(BuildContext context, String token) {
 class _LoginPageState extends State<LoginPage> {
     final TextEditingController _emailController = TextEditingController();
     final TextEditingController _passwordController = TextEditingController();
-    final String apiUrl = dotenv.env['API_URL'].toString();
 
     Future<void> sendData() async {
         final String email = _emailController.text.trim();
@@ -58,8 +57,10 @@ class _LoginPageState extends State<LoginPage> {
 
         if (response.statusCode == 200) {
             print('Données envoyées avec succès');
-
+            print("test");
             final String token = cleanToken(response.body);
+            print(token);
+            
             final response2 = await http.get(
                 Uri.parse('$apiUrl/autorisation/'),
                 headers: {
@@ -67,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
                     'Authorization': 'Bearer $token',
                 },
             );
-
+            print('URL de la requête: ${response2.request!.url}');
             if (response2.body=="1"){
                 // ignore: use_build_context_synchronously
                 redirectToProduit(context,token);
